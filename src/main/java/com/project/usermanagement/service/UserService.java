@@ -1,11 +1,14 @@
 package com.project.usermanagement.service;
 
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.project.usermanagement.dto.RegisterRequest;
 import com.project.usermanagement.entity.User;
 import com.project.usermanagement.repository.UserRepository;
+import com.project.usermanagement.security.JwtService;
+import com.project.usermanagement.security.UserDetailsServiceImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,6 +18,8 @@ public class UserService {
     
     private final UserRepository repo;
     private final PasswordEncoder encoder;
+    private final UserDetailsServiceImpl uds;
+    private final JwtService jwtService;
 
     public User register(RegisterRequest request) {
         if (repo.existsByEmail(request.email())) {
@@ -29,5 +34,11 @@ public class UserService {
                 .build();
         return repo.save(user);
     }
+
+    public UserDetails loadUserDetails(String email) {
+        return uds.loadUserByUsername(email);
+    }
+
+
 
 }
