@@ -1,5 +1,7 @@
 package com.project.usermanagement.user;
 
+import com.project.usermanagement.util.AccountStatus;
+import com.project.usermanagement.util.Role;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.project.usermanagement.entity.User;
@@ -17,14 +19,14 @@ public class UserSpecifications {
         );
     }
 
-    public static Specification<User> hasRole(String role) {
-        if (role == null || role.isBlank()) return null;
-        return (root, cq, cb) -> cb.equal(cb.lower(root.get("role")), role.toLowerCase());
+    public static Specification<User> hasRole(Role role) {
+        if (role == null) return null;
+        return (root, cq, cb) -> cb.equal(cb.lower(root.get("role")), role);
     }
 
-    public static Specification<User> hasStatus(String status) {
-        if (status == null || status.isBlank()) return null;
-        return (root, cq, cb) -> cb.equal(cb.lower(root.get("status")), status.toLowerCase());
+    public static Specification<User> hasStatus(AccountStatus status) {
+        if (status == null) return null;
+        return (root, cq, cb) -> cb.equal(cb.lower(root.get("status")), status);
     }
 
     public static Specification<User> createdFrom(Instant from) {

@@ -3,6 +3,7 @@ package com.project.usermanagement.security;
 import java.util.Collection;
 import java.util.List;
 
+import com.project.usermanagement.util.AccountStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,14 +17,14 @@ public class UserPrincipal implements UserDetails {
     public User getUser() { return user; }
 
     @Override public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
     }
 
     @Override public String getPassword() { return user.getPasswordHash();}
     @Override public String getUsername() { return user.getEmail(); }
     @Override public boolean isAccountNonExpired() { return true; }
-    @Override public boolean isAccountNonLocked() { return !"LOCKED".equalsIgnoreCase(user.getStatus()); }
+    @Override public boolean isAccountNonLocked() { return AccountStatus.LOCKED != user.getStatus(); }
     @Override public boolean isCredentialsNonExpired() { return true; }
-    @Override public boolean isEnabled() { return "ACTIVE".equalsIgnoreCase(user.getStatus()); }
+    @Override public boolean isEnabled() { return AccountStatus.ACTIVE == user.getStatus(); }
 
 }

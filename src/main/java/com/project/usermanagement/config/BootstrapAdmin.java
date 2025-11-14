@@ -2,6 +2,8 @@ package com.project.usermanagement.config;
 
 import com.project.usermanagement.entity.User;
 import com.project.usermanagement.repository.UserRepository;
+import com.project.usermanagement.util.AccountStatus;
+import com.project.usermanagement.util.Role;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Bean;
@@ -20,8 +22,8 @@ public class BootstrapAdmin {
                         .email(adminEmail)
                         .fullName("System Admin")
                         .passwordHash(encoder.encode(adminPass))
-                        .role("ADMIN")
-                        .status("ACTIVE")
+                        .role(Role.ADMIN)
+                        .status(AccountStatus.ACTIVE)
                         .build();
                 repo.save(u);
                 System.out.println("Seeded admin: " + adminEmail + " / (provided password)");   

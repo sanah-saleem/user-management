@@ -2,6 +2,7 @@ package com.project.usermanagement.user;
 
 import java.time.Instant;
 
+import com.project.usermanagement.dto.UserFilterRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -23,15 +24,9 @@ public class AdminUserController {
     private final AdminUserService service;
 
     @GetMapping()
-    public Page<UserResponse> List(
-            @RequestParam(required = false) String q,
-            @RequestParam(required = false) String role,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant createdFrom,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant createdTo,
-            @PageableDefault(size = 10, sort = "createdAt") Pageable pageable)
-    {
-        return service.findUsers(q, role, status, createdFrom, createdTo, pageable)
+    public Page<UserResponse> List(UserFilterRequest filter,
+                                   @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
+        return service.findUsers(filter, pageable)
             .map(UserResponse::from);
     }
     

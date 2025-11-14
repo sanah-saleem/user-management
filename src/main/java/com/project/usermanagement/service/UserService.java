@@ -1,5 +1,7 @@
 package com.project.usermanagement.service;
 
+import com.project.usermanagement.util.AccountStatus;
+import com.project.usermanagement.util.Role;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,8 +31,8 @@ public class UserService {
                 .email(request.email().trim())
                 .fullName(request.fullName().trim())
                 .passwordHash(encoder.encode(request.password()))
-                .role("USER")
-                .status("ACTIVE")
+                .role(Role.USER)
+                .status(AccountStatus.ACTIVE)
                 .build();
         return repo.save(user);
     }

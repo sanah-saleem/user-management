@@ -1,5 +1,8 @@
 package com.project.usermanagement.user;
 
+import com.project.usermanagement.dto.UserFilterRequest;
+import com.project.usermanagement.util.AccountStatus;
+import com.project.usermanagement.util.Role;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -21,14 +24,14 @@ public class AdminUserService {
     
     private final UserRepository repo;
 
-    public Page<User> findUsers(String q, String role, String status, Instant createdFrom, Instant createdTo, Pageable pageable) {
+    public Page<User> findUsers(UserFilterRequest filter, Pageable pageable) {
 
-        Specification<User> spec = and(
-            emailOrNameLike(q),
-            hasRole(role),
-            hasStatus(status),
-            createdFrom(createdFrom),
-            createdTo(createdTo)
+        var spec = UserSpecifications.and(
+                UserSpecifications.emailOrNameLike(filter.q()),
+                UserSpecifications.hasRole(filter.role()),
+                UserSpecifications.hasStatus(filter.status()),
+                UserSpecifications.createdFrom(filter.createdFrom()),
+                UserSpecifications.createdTo(filter.createdTo())
         );
         return repo.findAll(spec, pageable);
     }

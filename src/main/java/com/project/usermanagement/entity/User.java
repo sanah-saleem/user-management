@@ -2,15 +2,9 @@ package com.project.usermanagement.entity;
 
 import java.time.Instant;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import com.project.usermanagement.util.AccountStatus;
+import com.project.usermanagement.util.Role;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -39,6 +33,9 @@ public class User {
     @Column(nullable=false, length=255)
     private String email;
 
+    @Column(length = 20)
+    private String phone;
+
     @NotBlank
     @Column(nullable=false, length=100)
     private String fullName;
@@ -46,11 +43,13 @@ public class User {
     @Column(nullable=false, length=60)
     private String passwordHash;
 
-    @Column(nullable=false, length=50)
-    private String role;
-
+    @Enumerated(EnumType.STRING)
     @Column(nullable=false, length=20)
-    private String status;
+    private Role role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable=false, length=20)
+    private AccountStatus status;
 
     @Column(nullable=false, updatable=false)
     private Instant createdAt;
@@ -61,8 +60,8 @@ public class User {
     @PrePersist void prePersist() {
         createdAt = Instant.now();
         updatedAt = createdAt;
-        if (role == null) role = "USER";
-        if (status == null) status = "ACTIVE";
+        if (role == null) role = Role.USER;
+        if (status == null) status = AccountStatus.ACTIVE;
     }
 
     @PreUpdate void preUpdate() {

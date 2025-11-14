@@ -1,5 +1,6 @@
 package com.project.usermanagement.security;
 
+import com.project.usermanagement.util.MessageConstants;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,7 +19,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         var user = repository.findByEmail(email.trim())
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                    .orElseThrow(() -> new UsernameNotFoundException(MessageConstants.USER_NOT_FOUND));
         return new UserPrincipal(user);
 
     }
