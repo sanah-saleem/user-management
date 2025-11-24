@@ -39,6 +39,11 @@ public class UserSpecifications {
         return (root, cq, cb) -> cb.lessThan(root.get("createdAt"), to);
     }
 
+    public static Specification<User> excludeDeleted(Boolean includeDeleted) {
+        if (Boolean.TRUE.equals(includeDeleted)) return null;
+        return (root, cq, cb) -> cb.isFalse(root.get("deleted"));
+    }
+
     @SafeVarargs
     public static Specification<User> and(Specification<User>... specs) {
         Specification<User> result = null;

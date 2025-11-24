@@ -17,7 +17,7 @@ public class BootstrapAdmin {
         return args -> {
             String adminEmail = System.getProperty("app.admin.email", "admin@example.com");
             String adminPass = System.getProperty("app.admin.password", "Admin!234");
-            if (repo.findByEmail(adminEmail).isEmpty()) {
+            if (repo.findByEmailAndDeletedFalse(adminEmail).isEmpty()) {
                 var u = User.builder()
                         .email(adminEmail)
                         .fullName("System Admin")

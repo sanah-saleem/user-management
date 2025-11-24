@@ -10,5 +10,6 @@ public record UserFilterRequest(
    Role role,
    AccountStatus status,
    Instant createdFrom,
-   Instant createdTo
+   Instant createdTo,
+   Boolean includeDeleted
 ) {}

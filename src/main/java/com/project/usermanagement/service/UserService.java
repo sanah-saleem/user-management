@@ -1,6 +1,7 @@
 package com.project.usermanagement.service;
 
 import com.project.usermanagement.util.AccountStatus;
+import com.project.usermanagement.util.MessageConstants;
 import com.project.usermanagement.util.Role;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +25,7 @@ public class UserService {
     private final JwtService jwtService;
 
     public User register(RegisterRequest request) {
-        if (repo.existsByEmail(request.email())) {
+        if (repo.existsByEmailAndDeletedFalse(request.email())) {
             throw new IllegalArgumentException("Email already registered");
         }
         User user = User.builder()
@@ -39,6 +40,15 @@ public class UserService {
 
     public UserDetails loadUserDetails(String email) {
         return uds.loadUserByUsername(email);
+    }
+
+    public boolean isUserDeleted(String email) {
+        return repo.findByEmailAndDeletedFalse(email.trim()).isEmpty();
+    }
+
+    public boolean isUserActive(String email) {
+        User user = repo.findByEmailAndDeletedFalse(email.trim()).orElseThrow(() -> new IllegalArgumentException(MessageConstants.USER_NOT_FOUND));
+        return user.getStatus() == AccountStatus.ACTIVE;
     }
 
 

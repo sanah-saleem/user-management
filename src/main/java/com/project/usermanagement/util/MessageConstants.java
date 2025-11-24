@@ -13,5 +13,7 @@ public class MessageConstants {
     public static final String ERRORS = "errors";
     public static final String USER_NOT_FOUND = "User not found";
     public static final String EMAIL_ALREADY_REGISTERED = "Email already registered";
+    public static final String ACCOUNT_IS_NOT_ACTIVE = "Account is not active";
+    public static final String USER_IS_DELETED = "User is deleted";
 
 }

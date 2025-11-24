@@ -7,10 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 
 import com.project.usermanagement.dto.UserResponse;
 
@@ -28,6 +25,26 @@ public class AdminUserController {
                                    @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
         return service.findUsers(filter, pageable)
             .map(UserResponse::from);
+    }
+
+    @PostMapping("/{id}/deactivate")
+    public UserResponse deactivate(@PathVariable long id) {
+        return UserResponse.from(service.deactivate(id));
+    }
+
+    @PostMapping("/{id}/reactivate")
+    public UserResponse reactivate(@PathVariable long id) {
+        return UserResponse.from(service.reactivate(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public UserResponse softDelete(@PathVariable long id) {
+        return UserResponse.from(service.softDelete(id));
+    }
+
+    @PostMapping("/{id}/restore")
+    public UserResponse restore(@PathVariable long id) {
+        return UserResponse.from(service.restore(id));
     }
     
 }

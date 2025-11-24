@@ -29,7 +29,7 @@ public class SelfService {
         if(request.email() != null && !request.email().isBlank()) {
             String newEmail = request.email().trim();
             if(!newEmail.equals(user.getEmail())) {
-                if(repo.existsByEmail(newEmail)) {
+                if(repo.existsByEmailAndDeletedFalse(newEmail)) {
                     throw new IllegalArgumentException(MessageConstants.EMAIL_ALREADY_REGISTERED);
                 }
                 user.setEmail(newEmail);

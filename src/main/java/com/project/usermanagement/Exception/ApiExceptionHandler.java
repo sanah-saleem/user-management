@@ -40,6 +40,9 @@ public class ApiExceptionHandler {
             MessageConstants.NEW_PASSWORD_MUST_BE_ATLEAST_8_CHARACTERS.equals(msg)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(MessageConstants.MESSAGE, msg));
         }
+        if (MessageConstants.ACCOUNT_IS_NOT_ACTIVE.equals(msg)) {
+            return ResponseEntity.status(HttpStatus.LOCKED).body(Map.of(MessageConstants.MESSAGE, msg));
+        }
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(MessageConstants.MESSAGE, msg));
     }
     

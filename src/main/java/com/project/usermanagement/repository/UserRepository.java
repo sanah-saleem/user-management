@@ -11,7 +11,7 @@ import com.project.usermanagement.entity.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User>{
     
-    boolean existsByEmail(String email);
-    Optional<User> findByEmail(String email);
+    boolean existsByEmailAndDeletedFalse(String email);
+    Optional<User> findByEmailAndDeletedFalse(String email);
 
 }

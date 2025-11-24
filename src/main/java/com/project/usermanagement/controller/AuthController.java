@@ -1,5 +1,6 @@
 package com.project.usermanagement.controller;
 
+import com.project.usermanagement.util.MessageConstants;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,8 +42,14 @@ public class AuthController {
     @PostMapping("/login")
     public TokenResponse login(@Valid @RequestBody LoginRequest request) {
         var userDetails = service.loadUserDetails(request.email());
+        if (service.isUserDeleted(request.email())) {
+            throw new IllegalArgumentException(MessageConstants.INVALID_CREDENTIALS);
+        }
         if (!passwordEncoder.matches(request.password(), userDetails.getPassword())) {
-            throw new IllegalArgumentException("Invalid credentials");
+            throw new IllegalArgumentException(MessageConstants.INVALID_CREDENTIALS);
+        }
+        if (!service.isUserActive(request.email())) {
+            throw new IllegalArgumentException(MessageConstants.ACCOUNT_IS_NOT_ACTIVE);
         }
         var token = jwtService.generate(userDetails.getUsername());
         return TokenResponse.of(token);

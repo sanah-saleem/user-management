@@ -57,6 +57,11 @@ public class User {
     @Column(nullable=false)
     private Instant updatedAt;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    private Instant deletedAt;
+
     @PrePersist void prePersist() {
         createdAt = Instant.now();
         updatedAt = createdAt;
