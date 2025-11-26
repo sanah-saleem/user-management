@@ -1,13 +1,16 @@
 package com.project.usermanagement.service;
 
+import com.project.usermanagement.dto.*;
+import com.project.usermanagement.helper.HelperService;
+import com.project.usermanagement.security.UserPrincipal;
 import com.project.usermanagement.util.AccountStatus;
 import com.project.usermanagement.util.MessageConstants;
 import com.project.usermanagement.util.Role;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.project.usermanagement.dto.RegisterRequest;
 import com.project.usermanagement.entity.User;
 import com.project.usermanagement.repository.UserRepository;
 import com.project.usermanagement.security.JwtService;
@@ -21,12 +24,12 @@ public class UserService {
     
     private final UserRepository repo;
     private final PasswordEncoder encoder;
-    private final UserDetailsServiceImpl uds;
     private final JwtService jwtService;
+    private final HelperService helper;
 
     public User register(RegisterRequest request) {
         if (repo.existsByEmailAndDeletedFalse(request.email())) {
-            throw new IllegalArgumentException("Email already registered");
+            throw new IllegalArgumentException(MessageConstants.EMAIL_ALREADY_REGISTERED);
         }
         User user = User.builder()
                 .email(request.email().trim())
@@ -38,17 +41,49 @@ public class UserService {
         return repo.save(user);
     }
 
-    public UserDetails loadUserDetails(String email) {
-        return uds.loadUserByUsername(email);
+    public String login(LoginRequest request) {
+        var userDetails = helper.loadUserDetails(request.email());
+        if (helper.isUserDeleted(request.email())) {
+            throw new IllegalArgumentException(MessageConstants.INVALID_CREDENTIALS);
+        }
+        if (!encoder.matches(request.password(), userDetails.getPassword())) {
+            throw new IllegalArgumentException(MessageConstants.INVALID_CREDENTIALS);
+        }
+        if (!helper.isUserActive(request.email())) {
+            throw new IllegalArgumentException(MessageConstants.ACCOUNT_IS_NOT_ACTIVE);
+        }
+        return jwtService.generate(userDetails.getUsername());
     }
 
-    public boolean isUserDeleted(String email) {
-        return repo.findByEmailAndDeletedFalse(email.trim()).isEmpty();
+    @Transactional
+    public UpdateProfileResponse updateProfile(UserPrincipal principal, UpdateProfileRequest request) {
+        var user = helper.userMustExist(principal.getUser().getId());
+        boolean emailChanged = helper.applyProfileUpdates(principal.getUser(), request);
+
+        var saved = repo.save(user);
+        var response = UserResponse.from(user);
+
+        // If email changed, issue a fresh JWT to keep the client authenticated
+        if(emailChanged) {
+            var token = jwtService.generate(saved.getEmail());
+            return UpdateProfileResponse.withToken(response, token);
+        }
+        return UpdateProfileResponse.of(response);
     }
 
-    public boolean isUserActive(String email) {
-        User user = repo.findByEmailAndDeletedFalse(email.trim()).orElseThrow(() -> new IllegalArgumentException(MessageConstants.USER_NOT_FOUND));
-        return user.getStatus() == AccountStatus.ACTIVE;
+    @Transactional
+    public void changePassword(UserPrincipal principal, ChangePasswordRequest request) {
+        var user = repo.findById(principal.getUser().getId())
+                .orElseThrow(() -> new IllegalArgumentException(MessageConstants.USER_NOT_FOUND));
+        if (!encoder.matches(request.currentpassword(), user.getPasswordHash()))
+            throw new IllegalArgumentException(MessageConstants.CURRENT_PASSWORD_IS_INCORRECT);
+        if (encoder.matches(request.newPassword(), user.getPasswordHash()))
+            throw  new IllegalArgumentException(MessageConstants.NEW_PASSWORD_MUST_BE_DIFFERENT_FROM_CURRENT_PASSWORD);
+        // Basic strength checks (optional; enforce with @Pattern if you prefer)
+        if (request.newPassword().length() < 8)
+            throw new IllegalArgumentException(MessageConstants.NEW_PASSWORD_MUST_BE_ATLEAST_8_CHARACTERS);
+        user.setPasswordHash(encoder.encode(request.newPassword()));
+        repo.save(user);
     }
 
 

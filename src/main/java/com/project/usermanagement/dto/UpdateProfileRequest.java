@@ -14,4 +14,4 @@ public record UpdateProfileRequest (
 
     @Size(max = 20)
     String phone
-) {}
+) implements IProfileUpdatePayload {}

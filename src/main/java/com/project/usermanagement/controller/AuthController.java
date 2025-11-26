@@ -29,8 +29,6 @@ import com.project.usermanagement.security.JwtService;
 public class AuthController {
 
     private final UserService service;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -41,17 +39,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public TokenResponse login(@Valid @RequestBody LoginRequest request) {
-        var userDetails = service.loadUserDetails(request.email());
-        if (service.isUserDeleted(request.email())) {
-            throw new IllegalArgumentException(MessageConstants.INVALID_CREDENTIALS);
-        }
-        if (!passwordEncoder.matches(request.password(), userDetails.getPassword())) {
-            throw new IllegalArgumentException(MessageConstants.INVALID_CREDENTIALS);
-        }
-        if (!service.isUserActive(request.email())) {
-            throw new IllegalArgumentException(MessageConstants.ACCOUNT_IS_NOT_ACTIVE);
-        }
-        var token = jwtService.generate(userDetails.getUsername());
+        var token = service.login(request);
         return TokenResponse.of(token);
     }
     
