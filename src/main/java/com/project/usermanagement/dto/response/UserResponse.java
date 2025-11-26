@@ -1,4 +1,4 @@
-package com.project.usermanagement.dto;
+package com.project.usermanagement.dto.response;
 
 import com.project.usermanagement.entity.User;
 

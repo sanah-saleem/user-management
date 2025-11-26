@@ -1,20 +1,23 @@
 package com.project.usermanagement.service;
 
-import com.project.usermanagement.dto.*;
+import com.project.usermanagement.dto.request.ChangePasswordRequest;
+import com.project.usermanagement.dto.request.LoginRequest;
+import com.project.usermanagement.dto.request.RegisterRequest;
+import com.project.usermanagement.dto.request.UpdateProfileRequest;
+import com.project.usermanagement.dto.response.UpdateProfileResponse;
+import com.project.usermanagement.dto.response.UserResponse;
 import com.project.usermanagement.helper.HelperService;
 import com.project.usermanagement.security.UserPrincipal;
 import com.project.usermanagement.util.AccountStatus;
 import com.project.usermanagement.util.MessageConstants;
 import com.project.usermanagement.util.Role;
 import jakarta.transaction.Transactional;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.project.usermanagement.entity.User;
 import com.project.usermanagement.repository.UserRepository;
 import com.project.usermanagement.security.JwtService;
-import com.project.usermanagement.security.UserDetailsServiceImpl;
 
 import lombok.RequiredArgsConstructor;
 

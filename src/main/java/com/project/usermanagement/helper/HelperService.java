@@ -11,12 +11,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.util.Base64;
+
 @Service
 @RequiredArgsConstructor
 public class HelperService {
 
     private final UserRepository repo;
     private final UserDetailsServiceImpl uds;
+    private static final SecureRandom random = new SecureRandom();
 
     public User userMustExist(long id) {
         return repo.findById(id).orElseThrow(() -> new IllegalArgumentException(MessageConstants.USER_NOT_FOUND));
@@ -59,4 +63,11 @@ public class HelperService {
         User user = repo.findByEmailAndDeletedFalse(email.trim()).orElseThrow(() -> new IllegalArgumentException(MessageConstants.USER_NOT_FOUND));
         return user.getStatus() == AccountStatus.ACTIVE;
     }
+
+    public String generateToken() {
+        byte[] bytes = new byte[32]; // 256 bits
+        random.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
 }

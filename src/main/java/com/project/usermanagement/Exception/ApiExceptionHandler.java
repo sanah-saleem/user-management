@@ -44,7 +44,8 @@ public class ApiExceptionHandler {
             MessageConstants.NEW_PASSWORD_MUST_BE_DIFFERENT_FROM_CURRENT_PASSWORD.equals(msg) ||
             MessageConstants.NEW_PASSWORD_MUST_BE_ATLEAST_8_CHARACTERS.equals(msg) ||
             MessageConstants.EMAIL_ALREADY_REGISTERED.equals(msg) ||
-            MessageConstants.USER_IS_DELETED.equals(msg)) {
+            MessageConstants.USER_IS_DELETED.equals(msg) ||
+            MessageConstants.INVALID_OR_EXPIRED_TOKEN.equals(msg)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(MessageConstants.MESSAGE, msg));
         }
         if (MessageConstants.ACCOUNT_IS_NOT_ACTIVE.equals(msg)) {

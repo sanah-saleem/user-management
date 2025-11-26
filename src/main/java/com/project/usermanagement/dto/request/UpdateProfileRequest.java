@@ -1,5 +1,6 @@
-package com.project.usermanagement.dto;
+package com.project.usermanagement.dto.request;
 
+import com.project.usermanagement.dto.IProfileUpdatePayload;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -1,4 +1,4 @@
-package com.project.usermanagement.dto;
+package com.project.usermanagement.dto.request;
 
 import com.project.usermanagement.util.AccountStatus;
 import com.project.usermanagement.util.Role;

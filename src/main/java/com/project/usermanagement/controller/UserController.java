@@ -1,15 +1,15 @@
 package com.project.usermanagement.controller;
 
-import com.project.usermanagement.dto.ChangePasswordRequest;
-import com.project.usermanagement.dto.UpdateProfileRequest;
-import com.project.usermanagement.dto.UpdateProfileResponse;
+import com.project.usermanagement.dto.request.ChangePasswordRequest;
+import com.project.usermanagement.dto.request.UpdateProfileRequest;
+import com.project.usermanagement.dto.response.UpdateProfileResponse;
 import com.project.usermanagement.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.project.usermanagement.dto.UserResponse;
+import com.project.usermanagement.dto.response.UserResponse;
 import com.project.usermanagement.security.UserPrincipal;
 
 import java.util.Map;

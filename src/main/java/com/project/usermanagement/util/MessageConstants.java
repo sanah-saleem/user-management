@@ -15,5 +15,7 @@ public class MessageConstants {
     public static final String EMAIL_ALREADY_REGISTERED = "Email already registered";
     public static final String ACCOUNT_IS_NOT_ACTIVE = "Account is not active";
     public static final String USER_IS_DELETED = "User is deleted";
+    public static final String INVALID_OR_EXPIRED_TOKEN = "Invalid or expired reset token";
+    public static final String PASSWORD_RESET_SUCCESSFULLY = "Password reset successfully";
 
 }

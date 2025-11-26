@@ -1,7 +1,7 @@
 package com.project.usermanagement.controller;
 
-import com.project.usermanagement.dto.AdminUpdateUserRequest;
-import com.project.usermanagement.dto.UserFilterRequest;
+import com.project.usermanagement.dto.request.AdminUpdateUserRequest;
+import com.project.usermanagement.dto.request.UserFilterRequest;
 import com.project.usermanagement.service.AdminUserService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
-import com.project.usermanagement.dto.UserResponse;
+import com.project.usermanagement.dto.response.UserResponse;
 
 import lombok.RequiredArgsConstructor;
 

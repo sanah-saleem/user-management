@@ -1,7 +1,7 @@
 package com.project.usermanagement.service;
 
-import com.project.usermanagement.dto.AdminUpdateUserRequest;
-import com.project.usermanagement.dto.UserFilterRequest;
+import com.project.usermanagement.dto.request.AdminUpdateUserRequest;
+import com.project.usermanagement.dto.request.UserFilterRequest;
 import com.project.usermanagement.helper.HelperService;
 import com.project.usermanagement.user.UserSpecifications;
 import com.project.usermanagement.util.AccountStatus;
@@ -43,7 +43,7 @@ public class AdminUserService {
         var u = helper.userMustExist(id);
         if (u.isDeleted()) throw new IllegalArgumentException(MessageConstants.USER_IS_DELETED);
         u.setStatus(AccountStatus.INACTIVE);
-        return repo.save(u);
+        return u;
     }
 
     @Transactional
@@ -51,7 +51,7 @@ public class AdminUserService {
         var u = helper.userMustExist(id);
         if (u.isDeleted()) throw new IllegalArgumentException(MessageConstants.USER_IS_DELETED);
         u.setStatus(AccountStatus.ACTIVE);
-        return repo.save(u);
+        return u;
     }
 
     @Transactional
@@ -61,7 +61,6 @@ public class AdminUserService {
             u.setDeleted(true);
             u.setDeletedAt(Instant.now());
             u.setStatus(AccountStatus.INACTIVE);
-            repo.save(u);
         }
         return u;
     }
@@ -72,7 +71,6 @@ public class AdminUserService {
         if (u.isDeleted()) {
             u.setDeleted(false);
             u.setDeletedAt(null);
-            repo.save(u);
         }
         return u;
     }
