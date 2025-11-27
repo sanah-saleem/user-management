@@ -25,7 +25,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 
+@Tag(name = "Authentication", description = "Register, login and password reset")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor

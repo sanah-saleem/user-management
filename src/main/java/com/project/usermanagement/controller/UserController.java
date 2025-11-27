@@ -4,6 +4,7 @@ import com.project.usermanagement.dto.request.ChangePasswordRequest;
 import com.project.usermanagement.dto.request.UpdateProfileRequest;
 import com.project.usermanagement.dto.response.UpdateProfileResponse;
 import com.project.usermanagement.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +15,7 @@ import com.project.usermanagement.security.UserPrincipal;
 
 import java.util.Map;
 
+@Tag(name = "User (Self)", description = "Operations for the current logged-in user")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
