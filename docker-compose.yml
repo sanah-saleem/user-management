@@ -1,0 +1,42 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: user_mgmt_db
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_HOST: "%"
+    ports:
+      - "${MYSQL_PORT}:3306"   # host:container (use 3307 on host to avoid clash with local MySQL)
+    volumes:
+      - user_mgmt_db_data:/var/lib/mysql
+    command: [
+      "--default-authentication-plugin=mysql_native_password",
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci"
+    ]
+
+  app:
+    build: .
+    container_name: user_mgmt_app
+    depends_on:
+      - db
+    environment:
+      # Spring Boot datasource config (overrides application.yml)
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+      # Optional: override Hibernate ddl-auto if you want
+      # SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+      # JWT secret (override if you like)
+      APP_JWT_SECRET: ${APP_JWT_SECRET}
+      APP_JWT_EXPIRY_MINUTES: ${APP_JWT_EXPIRY_MINUTES}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "${APP_PORT}:8080"   # app accessible on localhost:8080
+    # restart: always
+
+volumes:
+  user_mgmt_db_data:
