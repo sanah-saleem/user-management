@@ -64,10 +64,4 @@ public class HelperService {
         return user.getStatus() == AccountStatus.ACTIVE;
     }
 
-    public String generateToken() {
-        byte[] bytes = new byte[32]; // 256 bits
-        random.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
 }

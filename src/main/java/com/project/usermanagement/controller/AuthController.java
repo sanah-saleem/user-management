@@ -1,11 +1,13 @@
 package com.project.usermanagement.controller;
 
+import com.project.usermanagement.dto.NotificationOtpVerificationStatus;
 import com.project.usermanagement.dto.request.ForgotPasswordRequest;
 import com.project.usermanagement.dto.request.ResetPasswordRequest;
 import com.project.usermanagement.dto.response.ForgotPasswordResponse;
 import com.project.usermanagement.service.PasswordResetService;
 import com.project.usermanagement.util.MessageConstants;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -50,16 +52,24 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ForgotPasswordResponse forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        var opt = passwordResetService.createResetToken(request.email());
-        return opt.map(t -> ForgotPasswordResponse.withToken(t.getToken()))
-                .orElseGet(ForgotPasswordResponse::generic);
+    public ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        passwordResetService.createResetToken(request.email(), "RESET_PASSWORD");
+        return ResponseEntity.ok("If email is valid, otp sent successfully");
     }
 
     @PostMapping("/reset-password")
     public Map<String, String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        passwordResetService.resetPassword(request.token(), request.newPassword());
-        return Map.of(MessageConstants.MESSAGE, MessageConstants.PASSWORD_RESET_SUCCESSFULLY);
+        NotificationOtpVerificationStatus status = passwordResetService.resetPassword(request);
+        if (status == NotificationOtpVerificationStatus.VALID)
+            return Map.of(MessageConstants.MESSAGE, MessageConstants.PASSWORD_RESET_SUCCESSFULLY);
+        if (status == NotificationOtpVerificationStatus.INVALID)
+            return Map.of(MessageConstants.MESSAGE, "Otp invalid");
+        if (status == NotificationOtpVerificationStatus.EXPIRED_OR_NOT_FOUND)
+            return Map.of(MessageConstants.MESSAGE, "Expired or wrong otp");
+        if (status == NotificationOtpVerificationStatus.TOO_MANY_ATTEMPTS)
+            return Map.of(MessageConstants.MESSAGE, "Too many attempts");
+        return Map.of(MessageConstants.MESSAGE, "unable to verify otp");
+
     }
     
 }
