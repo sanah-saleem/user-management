@@ -1,9 +1,6 @@
 package com.project.usermanagement.service;
 
-import com.project.usermanagement.dto.request.ChangePasswordRequest;
-import com.project.usermanagement.dto.request.LoginRequest;
-import com.project.usermanagement.dto.request.RegisterRequest;
-import com.project.usermanagement.dto.request.UpdateProfileRequest;
+import com.project.usermanagement.dto.request.*;
 import com.project.usermanagement.dto.response.UpdateProfileResponse;
 import com.project.usermanagement.dto.response.UserResponse;
 import com.project.usermanagement.helper.HelperService;
@@ -20,6 +17,7 @@ import com.project.usermanagement.repository.UserRepository;
 import com.project.usermanagement.security.JwtService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +27,7 @@ public class UserService {
     private final PasswordEncoder encoder;
     private final JwtService jwtService;
     private final HelperService helper;
+    private final NotificationClientService notificationClientService;
 
     public User register(RegisterRequest request) {
         if (repo.existsByEmailAndDeletedFalse(request.email())) {
@@ -41,7 +40,9 @@ public class UserService {
                 .role(Role.USER)
                 .status(AccountStatus.ACTIVE)
                 .build();
-        return repo.save(user);
+        repo.save(user);
+        sendWelcomeEmail(user);
+        return user;
     }
 
     public String login(LoginRequest request) {
@@ -87,8 +88,21 @@ public class UserService {
             throw new IllegalArgumentException(MessageConstants.NEW_PASSWORD_MUST_BE_ATLEAST_8_CHARACTERS);
         user.setPasswordHash(encoder.encode(request.newPassword()));
         repo.save(user);
+        helper.sendPasswordChangeAlert(user);
     }
 
-
+    private void sendWelcomeEmail(User user) {
+        String subject = "Welcome to Our Platform!";
+        String body = String.format(
+                "Hi %s,\n\n" +
+                        "Welcome to our platform. Your account has been created successfully with email: %s.\n\n" +
+                        "If you did not sign up, please contact support immediately.\n\n" +
+                        "Best regards,\nThe Team",
+                user.getFullName() != null ? user.getFullName() : "there",
+                user.getEmail()
+        );
+        EmailNotificationRequest emailRequest = new EmailNotificationRequest( user.getEmail(), subject, body );
+        notificationClientService.sendEmailNotification(emailRequest);
+    }
 
 }

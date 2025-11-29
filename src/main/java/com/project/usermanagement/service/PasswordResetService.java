@@ -7,6 +7,7 @@ import com.project.usermanagement.dto.request.NotificationOtpVerificationRequest
 import com.project.usermanagement.dto.request.ResetPasswordRequest;
 import com.project.usermanagement.dto.response.NotificationOtpVerificationResponse;
 import com.project.usermanagement.entity.User;
+import com.project.usermanagement.helper.HelperService;
 import com.project.usermanagement.repository.UserRepository;
 import com.project.usermanagement.util.AccountStatus;
 import com.project.usermanagement.util.MessageConstants;
@@ -22,6 +23,7 @@ public class PasswordResetService {
     private final UserRepository userRepo;
     private final PasswordEncoder encoder;
     private final NotificationClientService notificationClientService;
+    private final HelperService helper;
 
     @Transactional
     public void createResetToken(String email, String purpose) {
@@ -56,6 +58,7 @@ public class PasswordResetService {
         if (response.status() == NotificationOtpVerificationStatus.VALID) {
             user.setPasswordHash(encoder.encode(request.newPassword()));
         }
+        if (response.status() == NotificationOtpVerificationStatus.VALID) helper.sendPasswordChangeAlert(user);
         return response.status();
     }
 

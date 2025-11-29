@@ -1,9 +1,11 @@
 package com.project.usermanagement.helper;
 
 import com.project.usermanagement.dto.IProfileUpdatePayload;
+import com.project.usermanagement.dto.request.EmailNotificationRequest;
 import com.project.usermanagement.entity.User;
 import com.project.usermanagement.repository.UserRepository;
 import com.project.usermanagement.security.UserDetailsServiceImpl;
+import com.project.usermanagement.service.NotificationClientService;
 import com.project.usermanagement.util.AccountStatus;
 import com.project.usermanagement.util.MessageConstants;
 import jakarta.transaction.Transactional;
@@ -20,6 +22,7 @@ public class HelperService {
 
     private final UserRepository repo;
     private final UserDetailsServiceImpl uds;
+    private final NotificationClientService notificationClientService;
     private static final SecureRandom random = new SecureRandom();
 
     public User userMustExist(long id) {
@@ -62,6 +65,19 @@ public class HelperService {
     public boolean isUserActive(String email) {
         User user = repo.findByEmailAndDeletedFalse(email.trim()).orElseThrow(() -> new IllegalArgumentException(MessageConstants.USER_NOT_FOUND));
         return user.getStatus() == AccountStatus.ACTIVE;
+    }
+
+    public void sendPasswordChangeAlert(User user) {
+        String subject = "Your password has been changed";
+        String body = String.format(
+                "Hi %s,\n\n" +
+                        "Your account password was recently changed.\n" +
+                        "If this was not you, please reset your password immediately and contact support.\n\n" +
+                        "Best regards,\nThe Team",
+                user.getFullName() != null ? user.getFullName() : "there"
+        );
+        EmailNotificationRequest emailRequest = new EmailNotificationRequest( user.getEmail(), subject, body );
+        notificationClientService.sendEmailNotification(emailRequest);
     }
 
 }

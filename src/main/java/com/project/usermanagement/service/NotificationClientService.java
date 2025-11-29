@@ -1,5 +1,6 @@
 package com.project.usermanagement.service;
 
+import com.project.usermanagement.dto.request.EmailNotificationRequest;
 import com.project.usermanagement.dto.request.NotificationOtpRequest;
 import com.project.usermanagement.dto.request.NotificationOtpVerificationRequest;
 import com.project.usermanagement.dto.response.NotificationOtpVerificationResponse;
@@ -58,6 +59,27 @@ public class NotificationClientService {
         } catch (Exception ex) {
             log.error("Error calling notification-service /api/otp/verify", ex);
             throw ex;
+        }
+    }
+
+    public void sendEmailNotification(EmailNotificationRequest request) {
+        try {
+            notificationWebClient.post()
+                    .uri("/api/notifications/email")
+                    .bodyValue(request)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, response ->
+                        response.bodyToMono(String.class)
+                                .map(body -> new RuntimeException("Notification service error: " + body))
+                    ).toBodilessEntity()
+                    .block();
+            log.info("Queued email notification for {}", request.to());
+        } catch (WebClientResponseException ex) {
+            // we dont want to stop the main operation like user registration. so just log and continue
+            log.error("Error calling notification-service /api/notifications/email, status={}, body={}",
+                    ex.getStatusCode(), ex.getResponseBodyAsString(), ex);
+        } catch (Exception ex) {
+            log.error("Error calling notification-service /api/notifications/email", ex);
         }
     }
 
