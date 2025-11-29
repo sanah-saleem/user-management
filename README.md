@@ -1,296 +1,336 @@
-# User Management Service
 
-A production-style **User Management microservice** built with **Spring Boot, Spring Security, JPA, and MySQL**, designed to act as the central source of truth for users in a microservice ecosystem.
+# 🚀 **User Management Service**
 
-It exposes REST APIs for:
+*A fully containerized, production-style microservice responsible for user identity, authentication, authorization, and password recovery.*
 
-- User registration and login (JWT-based)
-- Profile management and password changes
-- Admin management of users (roles, status, soft delete)
-- Password reset with secure tokens
-- Health checks and OpenAPI/Swagger documentation
+This service is built using **Spring Boot**, **Spring Security (JWT)**, **MySQL**, and integrates with an external [**Notification Service**](https://github.com/sanah-saleem/NotificationService/blob/main/README.md) (via Docker) for sending OTPs, password reset emails, and other communication workflows.
 
-It is designed to integrate with a separate **Notification Service** for OTPs, welcome emails, and generic mail workflows.
+It is designed following clean modular boundaries:
 
----
+* **User Management Service** → owns user accounts, credentials, JWT auth
+* **Notification Service** → owns email/OTP delivery (Kafka + Redis + Mailhog)
 
-## 🔧 Tech Stack
-
-- **Language**: Java 17
-- **Framework**: Spring Boot
-  - Spring Web
-  - Spring Data JPA (Hibernate)
-  - Spring Security (JWT-based auth)
-  - Validation (Jakarta)
-- **Database**: MySQL 8
-- **Build**: Maven
-- **Auth**: JWT (HS256)
-- **Docs**: springdoc-openapi + Swagger UI
-- **Containerization**: Docker + Docker Compose
-- **Config**: `.env` + environment variables + `application.yml`
+Both services run together through **Docker Compose** for an instant plug-and-play development environment.
 
 ---
 
-## 🧩 Core Features
+# 📦 **Docker Images (Public)**
 
-### 1. Authentication & Authorization
+Both microservices are published on Docker Hub:
 
-- **Register** (`POST /api/auth/register`)
-  - Create a new user with `email`, `fullName`, and `password`.
-  - Ensures email uniqueness (excluding soft-deleted users).
-  - Stores passwords with BCrypt.
-  - Returns a safe `UserResponse` (no password).
+| Service                     | Image                                   |
+| --------------------------- | --------------------------------------- |
+| **User Management Service** | `sanah22/user-management-service:0.1.0` |
+| **Notification Service**    | `sanah22/notification-service:0.1.0`    |
 
-- **Login** (`POST /api/auth/login`)
-  - Accepts `email + password`.
-  - Validates credentials and user status.
-  - Issues a **JWT** (HS256) with configurable expiry.
-  - Prevents login if account is **INACTIVE** or **deleted**.
-
-- **JWT-secured APIs**
-  - Clients send `Authorization: Bearer <token>`.
-  - Stateless authentication via `JwtAuthFilter`.
-  - Roles enforced via Spring Security:
-    - `/api/admin/**` → `ROLE_ADMIN`
-    - user self endpoints → authenticated user
+These are automatically pulled by the provided `docker-compose.yml`.
 
 ---
 
-### 2. User Self-Service
+# 🧰 **Tech Stack**
 
-- **Get current user** (`GET /api/users/me`)
-  - Returns the authenticated user’s profile.
+### **Backend**
 
-- **Update profile** (`PUT /api/users/me`)
-  - Update `fullName`, `phone`, and optionally `email`.
-  - Email uniqueness enforced.
-  - If email changes, a **new JWT** is returned so the user stays authenticated.
+* Java 17
+* Spring Boot 3.x
+* Spring Web
+* Spring Security (JWT)
+* Spring Data JPA (Hibernate)
+* jakarta.validation
 
-- **Change password** (`POST /api/users/change-password`)
-  - Requires `currentPassword` + `newPassword`.
-  - Verifies current password.
-  - Enforces minimum length and “must be different” rule.
+### **Database**
 
----
+* MySQL 8
+* Hibernate ORM
+* Auto schema generation (development)
 
-### 3. Admin User Management
+### **Authentication**
 
-All admin endpoints require `ROLE_ADMIN` and are under `/api/admin/users`.
+* JWT (HS256, stateless)
+* BCrypt password hashing
 
-- **Paged user listing** (`GET /api/admin/users`)
-  - Supports:
-    - Search by email/name (`q`)
-    - Filter by `role` (`USER` / `ADMIN`)
-    - Filter by `status` (`ACTIVE`, `INACTIVE`, `LOCKED`)
-    - Filter by created date range (`createdFrom`, `createdTo`)
-    - Optionally include deleted users (`includeDeleted=true`)
-  - Uses a nice wrapper:
-    ```json
-    {
-      "items": [ ...UserResponse ],
-      "page": 0,
-      "size": 10,
-      "totalElements": 42,
-      "totalPages": 5,
-      "hasNext": true,
-      "hasPrevious": false,
-      "sort": "createdAt,desc"
-    }
-    ```
+### **Infrastructure**
 
-- **Update user (admin)** (`PUT /api/admin/users/{id}`)
-  - Partial update of:
-    - `fullName`
-    - `phone`
-    - `role` (`USER` / `ADMIN`)
-    - `status` (`ACTIVE` / `INACTIVE` / `LOCKED`)
-    - optionally `email` (with uniqueness check)
+* Docker & Docker Compose
+* Kafka (event-based notifications)
+* Redis (OTP caching on Notification Service side)
+* Mailhog (email testing)
 
-- **Deactivate / Reactivate**:
-  - `POST /api/admin/users/{id}/deactivate` → sets status to `INACTIVE`
-  - `POST /api/admin/users/{id}/reactivate` → sets status to `ACTIVE`
-  - Deactivated users cannot log in.
+### **Documentation & Tools**
 
-- **Soft-delete / Restore**:
-  - `DELETE /api/admin/users/{id}` → sets `deleted = true`, `deletedAt` and `status = INACTIVE`
-  - `POST /api/admin/users/{id}/restore` → clears `deleted`/`deletedAt`
-  - Soft-deleted users are excluded from normal queries and cannot log in.
+* Swagger / OpenAPI
+* Postman Collection included in repo
+* `.env` configuration
 
 ---
 
-### 4. Password Recovery
+# ⚙️ **Architecture Overview**
 
-- **Forgot password** (`POST /api/auth/forgot-password`)
-  - Accepts `email`.
-  - If user exists and is active:
-    - Generates a one-time **password reset token** (random, URL-safe, 15 min expiry).
-    - Persists token in `password_reset_tokens` table.
-  - For dev mode, token can be returned in response; in production, it should be sent via Notification Service (see integration section).
-  - For unknown emails, returns a generic message (does not leak existence).
+```
+                        +-----------------------------+
+                        |  User Management Service    |
+                        |  (Spring Boot + JWT + JPA)  |
+                        +-----------------------------+
+                                |            ^
+                                | REST       | Kafka (future)
+                                v            |
+                   +------------------------------+
+                   |    Notification Service      |
+                   | (Email + OTP + Kafka + Redis)|
+                   +------------------------------+
+                                 |
+                                 v
+                        External Providers
+                      (Mailhog / SMTP / SMS)
+```
 
-- **Reset password** (`POST /api/auth/reset-password`)
-  - Accepts `token` + `newPassword`.
-  - Validates:
-    - Token exists.
-    - Not expired.
-    - Not already used.
-    - User is ACTIVE and not deleted.
-  - Updates user password, marks token as used.
-
----
-
-### 5. Observability & Docs
-
-- **Health check** (`GET /api/health`)
-  - Simple JSON status with `status`, `startedAt`, `now`.
-
-- **Swagger UI / OpenAPI**
-  - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
-  - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
-
-Controllers are grouped with tags for easy exploration.
+* This service performs **authentication**, **authorization**, **admin user management**, and **password reset**.
+* Notification Service handles **OTP**, **email templates**, and **message delivery**, running as a separate microservice.
 
 ---
 
-## 📦 Integration with Notification Service (Planned)
+# 🚀 **How to Run the Service (Recommended: Docker Compose)**
 
-This User Management Service is designed to integrate with a separate **Notification Service** (for example, a Spring Boot + Kafka + Redis service) that handles:
+This repository includes a full `docker-compose.yml` that starts:
 
-- OTP generation & verification
-- Email/SMS notifications
-- Templated HTML emails
+* User Management Service
+* Notification Service
+* MySQL
+* Kafka
+* Redis
+* Mailhog
 
-### Potential integration points
-
-1. **OTP for login / sensitive actions**
-   - Add endpoints here such as:
-     - `POST /api/auth/request-otp` (for email/phone)
-     - `POST /api/auth/verify-otp`
-   - This service:
-     - Validates the user (email/phone).
-     - Emits an event or calls the Notification Service to send OTP.
-   - Notification Service:
-     - Generates OTP, caches it (e.g. Redis), sends via email/SMS.
-     - Verifies OTP on request or returns verification result via API.
-
-2. **Welcome emails**
-   - On successful registration, this service can:
-     - Publish an event to a Kafka topic (e.g. `user.registered`) with user details.
-     - Or call the Notification Service via REST with a "WELCOME_EMAIL" template key.
-   - Notification Service renders templates and sends the email.
-
-3. **Password reset emails**
-   - When a password reset token is generated:
-     - Instead of returning the raw token in the response, this service:
-       - Builds a frontend URL (e.g. `https://myapp.com/reset-password?token=...`)
-       - Sends it to Notification Service (email templating).
-   - Notification Service handles delivering the email with appropriate template.
-
-4. **Plain / ad-hoc mails**
-   - Admin or system events (e.g. “your account has been deactivated”) can:
-     - Trigger a REST call or event to Notification Service specifying:
-       - Recipient email
-       - Template ID (WELCOME, ACCOUNT_DEACTIVATED, PASSWORD_CHANGED, etc.)
-       - Dynamic parameters (name, timestamps, etc.)
-
-> The current codebase already has **clear boundaries**: User Management owns user data and security, while Notification Service will own mail/OTP delivery. Integration can be done via REST or Kafka without changing the core domain logic.
+Everything runs together automatically.
 
 ---
 
-## 🗄️ Data Model (Core Tables)
+## **1️⃣ Clone the repository**
+
+```bash
+git clone https://github.com/sanah-saleem/user-management.git
+cd user-management-service
+```
+
+---
+
+## **2️⃣ Create your `.env` file**
+
+A template is provided:
+
+```bash
+cp .env.example .env
+```
+
+`.env.example` contains:
+
+```env
+# App
+APP_PORT=8080
+
+# MySQL
+MYSQL_DATABASE=user_management
+MYSQL_ROOT_PASSWORD=root
+MYSQL_PORT=3307
+
+# JWT
+APP_JWT_SECRET=change-this-secret-before-running
+APP_JWT_EXPIRY_MINUTES=60
+```
+
+Modify values if needed.
+
+---
+
+## **3️⃣ Start all services**
+
+```bash
+docker compose up
+```
+
+Or without logs:
+
+```bash
+docker compose up -d
+```
+
+Docker will automatically pull:
+
+* `sanah22/user-management-service:0.1.0`
+* `sanah22/notification-service:0.1.0`
+* Kafka, Redis, MySQL, Mailhog
+
+---
+
+## **4️⃣ Access the services**
+
+| Component                | URL                                                                                        |
+| ------------------------ | ------------------------------------------------------------------------------------------ |
+| **User Management API**  | [http://localhost:8080](http://localhost:8080)                                             |
+| **Swagger UI**           | [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) |
+| **Health Check**         | [http://localhost:8080/api/health](http://localhost:8080/api/health)                       |
+| **Notification Service** | [http://localhost:8082](http://localhost:8082)                                             |
+| **MailHog UI (Emails)**  | [http://localhost:8025](http://localhost:8025)                                             |
+
+Try triggering "forgot password" → you’ll see the email appear in MailHog.
+
+---
+
+# 📁 **Postman Collection**
+
+A Postman collection is included in the root folder:
+
+```
+UserManagement.postman_collection.json
+```
+
+It contains ready-made requests for:
+
+* Registration
+* Login
+* Profile
+* Change password
+* Forgot password
+* Reset password
+* Admin API endpoints
+
+Import this file into Postman to test the system easily.
+
+---
+
+# 🔐 **Authentication & Security**
+
+### 🔸 Passwords
+
+Stored using **BCrypt** with 10–12 rounds.
+
+### 🔸 JWT Tokens
+
+Stateless authentication:
+`Authorization: Bearer <token>`
+
+JWT contains:
+
+* subject (email)
+* token issued timestamp
+* expiry timestamp
+
+### 🔸 User Status Validation
+
+Every authenticated request checks:
+
+* ACTIVE → allowed
+* INACTIVE → blocked
+* DELETED → blocked
+
+---
+
+# 🧩 **Integration With Notification Service**
+
+This service connects to **Notification Service** for:
+
+✔ OTP sending
+✔ Email delivery (password reset, welcome emails)
+✔ Messaging workflows (future: Kafka-based events)
+
+Configured via:
+
+```properties
+notification.service.base-url=http://notification-service:8082
+```
+
+The Notification Service handles:
+
+* OTP generation & verification
+* Email templating
+* Kafka-based notification events
+* Redis caching of OTPs
+* Mailhog for email debugging
+
+Both services run together through Docker Compose.
+
+---
+
+# 📚 **API Summary**
+
+### **Auth APIs**
+
+* `POST /api/auth/register`
+* `POST /api/auth/login`
+* `POST /api/auth/forgot-password`
+* `POST /api/auth/reset-password`
+
+### **User APIs**
+
+* `GET /api/users/me`
+* `PUT /api/users/me`
+* `POST /api/users/change-password`
+
+### **Admin APIs**
+
+All under `/api/admin/users/**`
+
+* List users (with filtering, paging, soft delete options)
+* Update user
+* Deactivate / Reactivate
+* Soft delete / Restore
+
+Full API documentation available at Swagger.
+
+---
+
+# 🗄️ **Database Schema (Core Tables)**
 
 ### `users`
 
-- `id` (PK)
-- `email` (unique, not null)
-- `full_name`
-- `password_hash`
-- `role` (`USER`, `ADMIN`)
-- `status` (`ACTIVE`, `INACTIVE`, `LOCKED`)
-- `phone` (optional)
-- `deleted` (boolean)
-- `deleted_at` (timestamp, nullable)
-- `created_at`
-- `updated_at`
+* id
+* email
+* password_hash
+* full_name
+* role (USER, ADMIN)
+* status (ACTIVE/INACTIVE)
+* phone
+* deleted
+* deleted_at
+* created_at
+* updated_at
 
 ### `password_reset_tokens`
 
-- `id` (PK)
-- `token` (unique)
-- `user_id` (FK → users.id)
-- `created_at`
-- `expires_at`
-- `used` (boolean)
+* id
+* token
+* user_id
+* created_at
+* expires_at
+* used
 
 ---
 
-## 🚀 Running the Service
+# 🔮 **Future Enhancements**
 
-### 1. Using Docker Compose (recommended)
-
-
-Requirements:
-- Docker
-- Docker Compose
-
-Steps:
-
-1. Create a `.env` file in project root:
-
-   ```env
-   # App
-   APP_PORT=8080
-
-   # MySQL
-   MYSQL_DATABASE=user_mgmt
-   MYSQL_ROOT_PASSWORD=root
-   MYSQL_PORT=3307
-
-   # JWT
-   APP_JWT_SECRET=super-secret-change-me-very-long-random-string
-   APP_JWT_EXPIRY_MINUTES=60
-   ```
-
-2. Start services:
-
-   ```bash
-   docker compose up --build
-   ```
-
-3. Access:
-
-   * API: `http://localhost:8080`
-   * Swagger UI: `http://localhost:8080/swagger-ui/index.html`
-   * Health: `http://localhost:8080/api/health`
-
-The app connects to MySQL via the `db` service inside the Docker network.
+* Email verification flow
+* OTP-based login or 2FA
+* Kafka event publishing (`user.registered`, etc.)
+* Login attempt rate limiting
+* Device/IP-based login tracking
+* Role/permission (RBAC/ABAC) system
+* Flyway/Liquibase DB migrations
+* Audit logs
+* Multi-tenant support
 
 ---
 
-### 2. Running Locally (without Docker)
+# 🧑‍💻 **Development (Local)**
 
-1. Start a local MySQL instance and create database:
+If you want to run *without Docker*:
+
+1. Start MySQL manually.
+2. Create DB:
 
    ```sql
-   CREATE DATABASE user_mgmt CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE DATABASE user_management CHARACTER SET utf8mb4;
    ```
-
-2. Configure `application.yml`:
-
-   ```yaml
-   spring:
-     datasource:
-       url: jdbc:mysql://localhost:3306/user_mgmt?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-       username: root
-       password: root
-
-   app:
-     jwt:
-       secret: change-me-to-a-very-long-random-string
-       expiry-minutes: 60
-   ```
-
-3. Run via Maven / IDE:
+3. Update `application.properties` accordingly.
+4. Run:
 
    ```bash
    mvn spring-boot:run
@@ -298,79 +338,17 @@ The app connects to MySQL via the `db` service inside the Docker network.
 
 ---
 
-## 🔐 JWT & Security Notes
+# 🎉 **Conclusion**
 
-* JWT tokens are **stateless**:
+This User Management Service is designed to be:
 
-  * No session stored on server.
-  * Every request is checked via `JwtAuthFilter`.
-* Token contains at least the **subject email**.
-* User status is validated on login and on each authenticated request via `UserPrincipal`:
+* **Production-ready**
+* **Containerized**
+* **Extensible**
+* **Secure**
+* **Cleanly separated** from Notification concerns
 
-  * `ACTIVE` → allowed
-  * `INACTIVE` / `deleted` → blocked
-* Passwords are stored using BCrypt (via `PasswordEncoder`).
+Just clone → copy `.env` → `docker compose up` → done.
 
-Future security enhancements (planned / optional):
 
-* `passwordChangedAt` + token versioning to invalidate old tokens after password change.
-* IP/device-aware login history.
-* Rate limiting / brute-force protection on login and password reset.
-
----
-
-## 🔮 Future Enhancements
-
-Some ideas you can implement later:
-
-1. **OTP-based flows**
-
-   * Login with OTP (email/phone) instead of password.
-   * 2FA for sensitive operations (change email, change password, delete account).
-
-2. **Email verification**
-
-   * On registration and email change:
-
-     * Create a verification token.
-     * Send via Notification Service.
-     * Mark email as verified once the token is used.
-
-3. **Audit logging**
-
-   * Track who changed what and when (e.g. admin changes to roles/status).
-   * Store audit records in a separate table or log index.
-
-4. **Role & permission model**
-
-   * Move from simple `USER` / `ADMIN` to more granular roles.
-   * Optionally add permissions/claims.
-
-5. **Flyway / Liquibase migrations**
-
-   * Replace `ddl-auto=update` with versioned DB migrations for production.
-
-6. **Multi-tenant support**
-
-   * Add `tenant_id` to users.
-   * Scope all queries by tenant.
-
-7. **Metrics & Observability**
-
-   * Add Prometheus metrics, request tracing, etc.
-   * Integrate with centralized logging.
-
----
-
-## 🧪 Testing
-
-* Unit tests with JUnit + Mockito (can be added for:
-
-  * `UserService`
-  * `PasswordResetService`
-  * `JwtService`
-* Integration tests with:
-
-  * Testcontainers (MySQL)
-  * MockMvc for REST endpoints
-
+Just tell me!
