@@ -1,0 +1,402 @@
+{
+	"info": {
+		"_postman_id": "3cf37431-0725-48ff-abc0-ad6a563fd04a",
+		"name": "User Management API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25145835"
+	},
+	"item": [
+		{
+			"name": "Register User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\":\"riza@example.com\",\r\n    \"fullName\":\"riza\",\r\n    \"password\":\"riza\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/auth/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"email\":\"riza@example.com\",\"password\":\"riza\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Who is me",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyaXphQGV4YW1wbGUuY29tIiwiaWF0IjoxNzYzMTMxNTM1LCJleHAiOjE3NjMxMzUxMzV9.UyTQ3Uh4cPbPBCtWELYrHqHwjErMP_N_kvr-H-0jYyc",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/users/me",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"users",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User List (Admin)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/admin/users?page=0&size=5",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"users"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update self",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyaXphQGV4YW1wbGUuY29tIiwiaWF0IjoxNzYzMTMxNTM1LCJleHAiOjE3NjMxMzUxMzV9.UyTQ3Uh4cPbPBCtWELYrHqHwjErMP_N_kvr-H-0jYyc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"fullName\" : \"riza\",\r\n    \"email\" : \"riza@gmail.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/users/me",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"users",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Change Password",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyaXphQGdtYWlsLmNvbSIsImlhdCI6MTc2MzEzMzI5MywiZXhwIjoxNzYzMTM2ODkzfQ.Ht8AlFxVbGRpzSWufCUiRJzFpnNQeb6_jHTuAZejBIM",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"currentpassword\": \"rizasaleem\",\r\n    \"newPassword\": \"rizasaleem\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/users/change-password",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"users",
+						"change-password"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "deactivate",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNvbSIsImlhdCI6MTc2NDAwNzk0OSwiZXhwIjoxNzY0MDExNTQ5fQ.VX2ECmvulzQ_l4-TsG_ucu3BjNfpR6T4jyZGE2hM6Ss",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/admin/users/1/deactivate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"users",
+						"1",
+						"deactivate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "reactivate",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNvbSIsImlhdCI6MTc2NDAwNzk0OSwiZXhwIjoxNzY0MDExNTQ5fQ.VX2ECmvulzQ_l4-TsG_ucu3BjNfpR6T4jyZGE2hM6Ss",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/admin/users/1/reactivate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"users",
+						"1",
+						"reactivate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNvbSIsImlhdCI6MTc2NDAwNzk0OSwiZXhwIjoxNzY0MDExNTQ5fQ.VX2ECmvulzQ_l4-TsG_ucu3BjNfpR6T4jyZGE2hM6Ss",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/admin/users/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"users",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "restore",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNvbSIsImlhdCI6MTc2NDAwNzk0OSwiZXhwIjoxNzY0MDExNTQ5fQ.VX2ECmvulzQ_l4-TsG_ucu3BjNfpR6T4jyZGE2hM6Ss",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/admin/users/1/restore",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"users",
+						"1",
+						"restore"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update(admin)",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNvbSIsImlhdCI6MTc2NDE2OTYwMSwiZXhwIjoxNzY0MTczMjAxfQ.Qw-JXwdvda6Xg5lCKMYlpKm0nOh0DeeLmCgAhe3n9os",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"fullName\":\"Sanah Admin\",\r\n    \"role\":\"USER\",\r\n    \"status\":\"INACTIVE\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/admin/users/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"users",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Forgot password",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "reset password",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"token\":\"TpraPckfcNwi8DFRhol66_mLKdMQU8o-_iKye8OOFvI\",\r\n    \"newPassword\":\"password\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/auth/reset-password",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth",
+						"reset-password"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "health",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
