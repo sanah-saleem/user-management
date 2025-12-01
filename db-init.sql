@@ -1,0 +1,2 @@
+CREATE DATABASE IF NOT EXISTS user_management;
+CREATE DATABASE IF NOT EXISTS bulk_orchestration;

@@ -9,7 +9,7 @@ services:
         condition: service_started
 
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${UM_MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -37,6 +37,20 @@ services:
     ports:
       - "8082:8082"
 
+  bulk_orch_app:
+    image: sanah22/bulk-orchestration:latest
+    container_name: bulk_orch_app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${BO_MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      USER_MANAGEMENT_BASE_URL: http://user-management:8080
+    ports:
+      - "8083:8083"
+
   db:
     image: mysql:8.0
     container_name: user_mgmt_db
@@ -48,6 +62,7 @@ services:
       - "${MYSQL_PORT}:3306"
     volumes:
       - user_mgmt_db_data:/var/lib/mysql
+      - ./db-init.sql:/docker-entrypoint-initdb.d/db-init.sql
     command: [
       "--default-authentication-plugin=mysql_native_password",
       "--character-set-server=utf8mb4",

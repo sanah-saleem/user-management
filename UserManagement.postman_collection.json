@@ -390,13 +390,164 @@
 			},
 			"response": []
 		},
-		{
-			"name": "health",
-			"request": {
-				"method": "GET",
-				"header": []
-			},
-			"response": []
-		}
+        {
+          "name": "create import job",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"sourceFileName\": \"users_import_2025_11_30.csv\",\r\n    \"sendWelcomeEmail\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8083/api/imports",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "imports"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get job details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8083/api/imports/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "imports",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "file upload",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/C:/Users/rizas/OneDrive/Desktop/test.csv"
+                },
+                {
+                  "key": "sendWelcomeMail",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8083/api/imports/upload?sendWelcomeMail=true",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "imports",
+                "upload"
+              ],
+              "query": [
+                {
+                  "key": "sendWelcomeMail",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "run job",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8083/api/imports/1/run",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "imports",
+                "1",
+                "run"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "failed rows in jobid",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8083/api/imports/1/errors",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "imports",
+                "1",
+                "errors"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "download csv",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8083/api/imports/1/errors/export",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "imports",
+                "1",
+                "errors",
+                "export"
+              ]
+            }
+          },
+          "response": []
+        }
 	]
 }
